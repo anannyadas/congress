@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [![Build Status](https://travis-ci.org/unitedstates/congressional-record.png)](https://travis-ci.org/unitedstates/congressional-record)
 
 # congressional-record
@@ -15,3 +16,8 @@ This software is released as-is under the BSD3 License, with no warranty of any 
 # Recommended citation:
 
 Judd, Nicholas, Dan Drinkard, Jeremy Carbaugh, and Lindsay Young. *congressional-record: A parser for the Congressional Record.* Chicago, IL: 2017.
+=======
+# congress
+congress
+@author: Anannya Das
+>>>>>>> d90c97f12fd84d90c8beeda806305c5ecb705a7b
