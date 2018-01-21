@@ -10,6 +10,7 @@ import xml.etree.cElementTree as ET
 from .subclasses import crItem
 import logging
 import itertools
+import json
 
 
 
@@ -137,7 +138,7 @@ class ParseCRFile(object):
             output_dict['name_full'] = 'None'
 	#print(output_dict)
 	#cr.memberlistfinal.append(output_dict)
-	import json
+
 	with open('json/'+output_dict['bioguideid']+'.json','w+') as out_json:
                      json.dump(output_dict,out_json)
         return output_dict

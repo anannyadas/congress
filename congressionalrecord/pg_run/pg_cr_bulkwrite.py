@@ -58,7 +58,7 @@ class outStack(object):
 
 class crToPG(object):
 
-    def ingest(self,crfile,pagestack,billstack,speechstack):
+    def ingest(self,crfile,pagestack,billstack,speechstack,speechstack1):
         """
         Break a crdoc into three parts
         Pass the appropriate rows for each part
@@ -94,7 +94,7 @@ class crToPG(object):
         # Bills for the bill god!
         billstack.add(bills)
 
-        speeches = []
+        #speeches = []
         ''' for speech in crfile['content']:
             if speech['kind'] == 'speech':
                 speechid = crfile['id'] + '-' + str(speech['turn'])
@@ -108,6 +108,10 @@ class crToPG(object):
 			      ('party',test)
                              ]) # Gotta get rid of delimiter char
                 speeches.append(speech_row)'''
+	speeches_republican = []
+	speeches_democratic = []
+	#speech_row_D =[]
+	#speech_row_R =[]
 	for speech in crfile['content']:
             if speech['kind'] == 'speech':
                 speechid = crfile['id'] + '-' + str(speech['turn'])
@@ -116,27 +120,67 @@ class crToPG(object):
 		#print(speech['speaker_bioguide'])
 		if speech['speaker_bioguide']:
 			keybioguideid = speech['speaker_bioguide']
-		else:
-			keybioguideid = 'dummy'
-		print(keybioguideid)
-		
-		with open(keybioguideid+'.json') as json_data:
-    				d = json.load(json_data)
+			outpath = os.path.join('','json',keybioguideid+'.json')
+			#print(outpath)
+			#outpath = 'json\\'+keybioguideid+'.json'
+			with open(outpath) as json_data:
+    					d = json.load(json_data)
+			if d['party']=='D':
+				
     				#print(d['party'])
-                speech_row = OrderedDict([('speechid',speechid),
+               			speech_row_D = OrderedDict([('speechid',speechid),
+ 			        ('affiliation','Affiliation:'+d['party']),
+                                ('speaker',speech['speaker']),
+                                ('speaker_bioguide',speech['speaker_bioguide']),
+			        ('pageid',crfile['id']),
+				('text',''),
+                                ('text',rd(speech['text'])),
+                                #('turn',speech['turn'])
+			      
+                                ]) # Gotta get rid of delimiter char
+				speeches_democratic.append(speech_row_D)
+				#print(str(keybioguideid) + "D")
+				'''if speech_row_D:
+					#print(speech_row_D)
+					speeches_democratic.append(speech_row_D)
+				else:
+					pass'''
+			     
+			elif d['party'] =='R':
+				
+		 	      speech_row_R = OrderedDict([('speechid',speechid),
  			      ('affiliation','Affiliation:'+d['party']),
                               ('speaker',speech['speaker']),
                               ('speaker_bioguide',speech['speaker_bioguide']),
 			      ('pageid',crfile['id']),
+			      #('text',''),
                               ('text',rd(speech['text'])),
                               ('turn',speech['turn'])
 			      
-                             ]) # Gotta get rid of delimiter char
+                              ])
+			      #print(str(keybioguideid) + "R")
+			      speeches_republican.append(speech_row_R)
+			      '''if speech_row_R:
+					#print(speech_row_R)
+					speeches_democratic.append(speech_row_R)
+			      else:
+					pass'''
+			      
+		else:
+			keybioguideid = 'dummy'
+			#print(str(keybioguideid))
+		
+		
+		
 		#pr.find_people(pr(),'','')
 		
-                speeches.append(speech_row)
+
+		
 		# SPEECHES FOR THE SPEECH THRONE
-        	speechstack.add(speeches)
+		#print(speeches_republican)
+		#print(speeches_democratic)
+        	speechstack.add(speeches_republican)
+		speechstack1.add(speeches_democratic)
     
     def find_people(self):
         	mbrs = self.doc_ref.find_all('congmember')
@@ -213,9 +257,9 @@ class crToPG(object):
             pass
         else:
             kwargs['csvpath'] = 'dbfiles'
-        pagepath, billpath, speechpath = [
+        pagepath, billpath, speechpath,speechpath1 = [
             os.path.join(kwargs['csvpath'], filename)
-            for filename in ['pages.csv','bills.csv','speeches.csv']]
+            for filename in ['pages.csv','bills.csv','speeches_R.csv','speeches_D.csv']]
         self.downloader = dl(start,**kwargs)
 	self.doc_ref = ''
 	memberlistfinal = []
@@ -238,12 +282,14 @@ class crToPG(object):
         pagestack = crPages(pagepath,self.page_fields)
         billstack = crBills(billpath,self.bill_fields)
         speechstack = crSpeeches(speechpath,self.speech_fields)
+	speechstack1 = crSpeeches(speechpath1,self.speech_fields)
         for crfile in self.downloader.yielded:
             doc = crfile.crdoc
-            self.ingest(doc,pagestack,billstack,speechstack)
+            self.ingest(doc,pagestack,billstack,speechstack,speechstack1)
            # pagestack.write()
            # billstack.write()
             speechstack.write()
+ 	    speechstack1.write()
 	
         
 
