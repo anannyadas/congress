@@ -138,7 +138,7 @@ class ParseCRFile(object):
 	#print(output_dict)
 	#cr.memberlistfinal.append(output_dict)
 	import json
-	with open(output_dict['bioguideid']+'.json','w+') as out_json:
+	with open('json/'+output_dict['bioguideid']+'.json','w+') as out_json:
                      json.dump(output_dict,out_json)
         return output_dict
     

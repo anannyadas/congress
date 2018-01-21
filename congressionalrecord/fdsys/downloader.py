@@ -10,7 +10,7 @@ import os
 from datetime import datetime,date,timedelta
 from time import sleep
 from zipfile import ZipFile
-from .cr_parser import ParseCRDir, ParseCRFile
+from .cr_parser import ParseCRDir, ParseCRFile 
 import json
 from pyelasticsearch import ElasticSearch, bulk_chunks
 import logging
@@ -126,6 +126,7 @@ class Downloader(object):
                 if 'json' not in os.listdir(outpath):
                     os.mkdir(os.path.join(outpath,'json'))
                 outpath = os.path.join(outpath,'json',filename)
+		print(outpath)
                 with open(outpath,'w') as out_json:
                     json.dump(crfile.crdoc,out_json)
         elif kwargs['do_mode'] == 'yield':
