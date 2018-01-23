@@ -14,6 +14,8 @@ import json
 
 
 
+
+
 class ParseCRDir(object):
     
     def gen_dir_metadata(self):
@@ -104,6 +106,7 @@ class ParseCRFile(object):
     re_newpage =   r'\s*\[\[Page \w+\]\]'
     re_timestamp = r'\s+\{time\}\s+\d{4}'
 
+    
     # Metadata-making functions
     def title_id(self):
         id_num = self.num_titles
@@ -138,7 +141,9 @@ class ParseCRFile(object):
             output_dict['name_full'] = 'None'
 	#print(output_dict)
 	#cr.memberlistfinal.append(output_dict)
-
+	
+	''' if 'json' not in os.listdir(outpath):
+                    os.mkdir(os.path.join(outpath,'json'))'''
 	with open('json/'+output_dict['bioguideid']+'.json','w+') as out_json:
                      json.dump(output_dict,out_json)
         return output_dict

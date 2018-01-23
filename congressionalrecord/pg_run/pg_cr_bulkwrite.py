@@ -21,6 +21,9 @@ import xml.etree.cElementTree as ET
 import logging
 import itertools
 
+#list of common stop words various languages like the
+from stop_words import get_stop_words
+
 def if_exists(key,store):
     if key in list(store.keys()):
         return store[key]
@@ -57,6 +60,30 @@ class outStack(object):
     
 
 class crToPG(object):
+	
+
+    #remove stop words
+    def remove_stop_words(self,frequency_list):
+    	stop_words = get_stop_words('en')
+	frequency_list=frequency_list.split(" ")
+
+    	temp_list = []
+	#print(frequency_list)
+	try:
+		for key in frequency_list:
+        			if key not in stop_words:
+					if temp_list.append([key]):
+            					temp_list.append([key]).encode("utf-8")
+						#print(key)
+				else:
+					#print("Removing    " + str(key))
+					pass
+
+	except ValueError:
+	     print "no such value"
+
+	#print(temp_list)    	
+	return temp_list
 
     def ingest(self,crfile,pagestack,billstack,speechstack,speechstack1):
         """
@@ -64,6 +91,7 @@ class crToPG(object):
         Pass the appropriate rows for each part
         to the right stack for a bulk insert.
         """
+	#print(crfile)
         page_row =  OrderedDict([('pageid',crfile['id']),
                      ('title',rd(crfile['doc_title'])),
                      ('chamber',crfile['header']['chamber']),
@@ -113,6 +141,7 @@ class crToPG(object):
 	#speech_row_D =[]
 	#speech_row_R =[]
 	for speech in crfile['content']:
+
             if speech['kind'] == 'speech':
                 speechid = crfile['id'] + '-' + str(speech['turn'])
 		#test = 'anannya'
@@ -125,16 +154,20 @@ class crToPG(object):
 			#outpath = 'json\\'+keybioguideid+'.json'
 			with open(outpath) as json_data:
     					d = json.load(json_data)
+			#print(rd(speech['text']))
+			#print('*****************************************************************************************************************************************')
+			speech_remove_stop_words = self.remove_stop_words(rd(speech['text']))
+			#print(speech_remove_sort_words)
 			if d['party']=='D':
 				
     				#print(d['party'])
-               			speech_row_D = OrderedDict([('speechid',speechid),
+               			speech_row_D = OrderedDict([
+				#('speechid',speechid),
  			        ('affiliation','Affiliation:'+d['party']),
                                 ('speaker',speech['speaker']),
                                 ('speaker_bioguide',speech['speaker_bioguide']),
-			        ('pageid',crfile['id']),
-				('text',''),
-                                ('text',rd(speech['text'])),
+			        #('pageid',crfile['id']),
+                                ('text',speech_remove_stop_words),
                                 #('turn',speech['turn'])
 			      
                                 ]) # Gotta get rid of delimiter char
@@ -147,15 +180,16 @@ class crToPG(object):
 					pass'''
 			     
 			elif d['party'] =='R':
-				
-		 	      speech_row_R = OrderedDict([('speechid',speechid),
+			      speech_remove_stop_words = self.remove_stop_words(rd(speech['text']))
+		 	      speech_row_R = OrderedDict([
+			      #('speechid',speechid),
  			      ('affiliation','Affiliation:'+d['party']),
                               ('speaker',speech['speaker']),
                               ('speaker_bioguide',speech['speaker_bioguide']),
-			      ('pageid',crfile['id']),
+			      #('pageid',crfile['id']),
 			      #('text',''),
-                              ('text',rd(speech['text'])),
-                              ('turn',speech['turn'])
+                              ('text',speech_remove_stop_words),
+                              #('turn',speech['turn'])
 			      
                               ])
 			      #print(str(keybioguideid) + "R")
@@ -277,13 +311,15 @@ class crToPG(object):
                            'pages','wkday']
         self.bill_fields = ['congress','context',
                             'bill_type','bill_no','pageid']
-        self.speech_fields = ['speechid','affiliation','speaker','speaker_bioguide',
-                              'pageid','text','turn']
+        #self.speech_fields = ['speechid','affiliation','speaker','speaker_bioguide','pageid','text','turn']
+	self.speech_fields = ['affiliation','speaker','speaker_bioguide',
+                              'text']
         pagestack = crPages(pagepath,self.page_fields)
         billstack = crBills(billpath,self.bill_fields)
         speechstack = crSpeeches(speechpath,self.speech_fields)
 	speechstack1 = crSpeeches(speechpath1,self.speech_fields)
         for crfile in self.downloader.yielded:
+	    #print(crfile)
             doc = crfile.crdoc
             self.ingest(doc,pagestack,billstack,speechstack,speechstack1)
            # pagestack.write()

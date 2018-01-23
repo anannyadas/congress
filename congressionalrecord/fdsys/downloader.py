@@ -120,13 +120,14 @@ class Downloader(object):
             # outpath called so often to make it easy to follow
             # the idea that we're traversing a directory tree
             for crfile in self.bulkdownload(start,**kwargs):
+		#print(crfile.filepath[-1].split('.')[0])
                 filename = os.path.split(crfile.filepath)[-1].split('.')[0] + '.json'
                 outpath = os.path.split(crfile.filepath)[0]
                 outpath = os.path.split(outpath)[0]
                 if 'json' not in os.listdir(outpath):
                     os.mkdir(os.path.join(outpath,'json'))
                 outpath = os.path.join(outpath,'json',filename)
-		print(outpath)
+		#print(outpath)
                 with open(outpath,'w') as out_json:
                     json.dump(crfile.crdoc,out_json)
         elif kwargs['do_mode'] == 'yield':
