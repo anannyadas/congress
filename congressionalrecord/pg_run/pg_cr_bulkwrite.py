@@ -23,6 +23,9 @@ import itertools
 
 #list of common stop words various languages like the
 from stop_words import get_stop_words
+#from stemming.porter2 import stem
+from porter2stemmer import Porter2Stemmer
+
 
 def if_exists(key,store):
     if key in list(store.keys()):
@@ -62,6 +65,7 @@ import re
 class crToPG(object):
 	
 
+    stemmer = Porter2Stemmer()
 
     #remove stop words
     def remove_stop_words(self,frequency_list):
@@ -75,6 +79,7 @@ class crToPG(object):
 	#frequency_list=frequency_list.split(" ")
 
     	temp_list = []
+	stemmer = Porter2Stemmer()
 	#print(frequency_list)
 	#stop_words.append(stop_words_data)
 	#print(stop_words)
@@ -91,6 +96,12 @@ class crToPG(object):
 				else:
 					print("Removing:"+str(key))'''
 		querywords = frequency_list.split()
+
+
+		for stemwords in querywords:
+			print(stemwords,stemmer.stem(stemwords))
+
+
 
 		resultwords  = [word for word in querywords if word.lower() not in stop_words]
 		result = ' '.join(resultwords)
@@ -185,6 +196,7 @@ class crToPG(object):
 	#speech_row_R =[]
 	democratic_data_output=''
 	republican_data_output=''
+
 	for speech in crfile['content']:
 
             if speech['kind'] == 'speech':
@@ -215,6 +227,7 @@ class crToPG(object):
 				speech_remove_stop_words =[]
 				speech_remove_stop_words = self.remove_stop_words(rd(speech['text']))
     				#print(d['party'])
+
 				current_speaker_data = '\n\n' + speech_remove_stop_words
 				democratic_data_output =democratic_data_output + current_speaker_data + '\n'
 				
@@ -241,7 +254,9 @@ class crToPG(object):
 			      speech_row_D =[]
 			      speech_remove_stop_words =[]
 			      speech_remove_stop_words = self.remove_stop_words(rd(speech['text']))
-			      #print(speech_remove_stop_words)
+
+			      #print(speech_remove_stop_words,stemmer.stem(speech_remove_stop_words))
+			     
 			      current_speaker_data = '\n\n' + speech_remove_stop_words
 			      republican_data_output =republican_data_output + current_speaker_data + '\n'
 		 	      speech_row_R = OrderedDict([
