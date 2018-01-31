@@ -58,32 +58,75 @@ class outStack(object):
                                      delimiter='|',encoding='utf-8')
 
     
-
+import re
 class crToPG(object):
 	
 
+
     #remove stop words
     def remove_stop_words(self,frequency_list):
-    	stop_words = get_stop_words('en')
-	frequency_list=frequency_list.split(" ")
+
+	stop_words = []
+    	#stop_words = get_stop_words('en')
+	with open("stop_words_list.txt") as stop_words_list:
+    		#stop_words = [line.split(',') for line in stop_words_list if line.strip()]
+		stop_words_data = stop_words_list.read()
+		stop_words = stop_words_data.split(',')
+	#frequency_list=frequency_list.split(" ")
 
     	temp_list = []
 	#print(frequency_list)
+	#stop_words.append(stop_words_data)
+	#print(stop_words)
 	try:
-		for key in frequency_list:
-        			if key not in stop_words:
-					if temp_list.append([key]):
-            					temp_list.append([key]).encode("utf-8")
-						#print(key)
+		'''for key in frequency_list:
+				#print(key)
+        			if key.lower() not in stop_words:
+					
+    							#print (key)
+							
+							#key = self.remove_custom_stop_words(key)
+							temp_list.append([key])
+							
 				else:
-					#print("Removing    " + str(key))
-					pass
+					print("Removing:"+str(key))'''
+		querywords = frequency_list.split()
+
+		resultwords  = [word for word in querywords if word.lower() not in stop_words]
+		result = ' '.join(resultwords)
+
+		#print result
 
 	except ValueError:
 	     print "no such value"
 
-	#print(temp_list)    	
-	return temp_list
+	#print(result)    	
+	return result
+    
+
+    
+    def remove_custom_stop_words(self, word_list):
+	
+	#stop_words_lst = ['yo', 'so', 'well', 'um', 'a', 'the', 'you know', 'i mean']
+	with open("stop_words_list.txt") as stop_words_list:
+    		stop_words_list = [line.split('\n') for line in stop_words_list if line.strip()]
+		
+		'''for word in stop_words_list:
+
+    			pattern = r'\b'+word[0]+r'\b'
+
+    			word_list = re.sub(pattern, '', word_list)'''
+
+	
+	try:
+        	if word_list not in stop_words_list:
+			return word_list
+		else:
+			print("Match found:"+str(word_list))
+	except ValueError:
+	     print "no such value"
+
+
 
     def ingest(self,crfile,pagestack,billstack,speechstack,speechstack1):
         """
@@ -140,13 +183,21 @@ class crToPG(object):
 	speeches_democratic = []
 	#speech_row_D =[]
 	#speech_row_R =[]
+	democratic_data_output=''
+	republican_data_output=''
 	for speech in crfile['content']:
 
             if speech['kind'] == 'speech':
-                speechid = crfile['id'] + '-' + str(speech['turn'])
+                #speechid = crfile['id'] + '-' + str(speech['turn'])
 		#test = 'anannya'
+		#print(speech)
 		import json
 		#print(speech['speaker_bioguide'])
+		#print(rd(speech['text']))
+
+		v = str(speech['speaker_bioguide']) + "||" + str(rd(speech['text']))
+		'''with open('speeches_test','a+') as out_json:
+                    json.dump(v,out_json)'''
 		if speech['speaker_bioguide']:
 			keybioguideid = speech['speaker_bioguide']
 			outpath = os.path.join('','json',keybioguideid+'.json')
@@ -156,49 +207,62 @@ class crToPG(object):
     					d = json.load(json_data)
 			#print(rd(speech['text']))
 			#print('*****************************************************************************************************************************************')
-			speech_remove_stop_words = self.remove_stop_words(rd(speech['text']))
+			
 			#print(speech_remove_sort_words)
 			if d['party']=='D':
+				speech_row_D =[]
 				
+				speech_remove_stop_words =[]
+				speech_remove_stop_words = self.remove_stop_words(rd(speech['text']))
     				#print(d['party'])
+				current_speaker_data = '\n\n' + speech_remove_stop_words
+				democratic_data_output =democratic_data_output + current_speaker_data + '\n'
+				
                			speech_row_D = OrderedDict([
 				#('speechid',speechid),
  			        ('affiliation','Affiliation:'+d['party']),
                                 ('speaker',speech['speaker']),
-                                ('speaker_bioguide',speech['speaker_bioguide']),
+                                #('speaker_bioguide',speech['speaker_bioguide']),
 			        #('pageid',crfile['id']),
                                 ('text',speech_remove_stop_words),
                                 #('turn',speech['turn'])
 			      
-                                ]) # Gotta get rid of delimiter char
+                                ]) 
 				speeches_democratic.append(speech_row_D)
-				#print(str(keybioguideid) + "D")
-				'''if speech_row_D:
-					#print(speech_row_D)
+				'''if len(speech_remove_stop_words):
+					#print(speech_remove_stop_words)
 					speeches_democratic.append(speech_row_D)
 				else:
-					pass'''
+					pass
+				#print(str(keybioguideid) + "D")'''
+				
 			     
 			elif d['party'] =='R':
+			      speech_row_D =[]
+			      speech_remove_stop_words =[]
 			      speech_remove_stop_words = self.remove_stop_words(rd(speech['text']))
+			      #print(speech_remove_stop_words)
+			      current_speaker_data = '\n\n' + speech_remove_stop_words
+			      republican_data_output =republican_data_output + current_speaker_data + '\n'
 		 	      speech_row_R = OrderedDict([
 			      #('speechid',speechid),
  			      ('affiliation','Affiliation:'+d['party']),
                               ('speaker',speech['speaker']),
-                              ('speaker_bioguide',speech['speaker_bioguide']),
+                              #('speaker_bioguide',speech['speaker_bioguide']),
 			      #('pageid',crfile['id']),
 			      #('text',''),
                               ('text',speech_remove_stop_words),
                               #('turn',speech['turn'])
 			      
                               ])
-			      #print(str(keybioguideid) + "R")
 			      speeches_republican.append(speech_row_R)
-			      '''if speech_row_R:
-					#print(speech_row_R)
-					speeches_democratic.append(speech_row_R)
+			      #print(str(keybioguideid) + "R")
+			      '''if len(speech_remove_stop_words):
+					#print(speech_remove_stop_words)
+			      		speeches_republican.append(speech_row_R)
 			      else:
 					pass'''
+			      
 			      
 		else:
 			keybioguideid = 'dummy'
@@ -213,8 +277,16 @@ class crToPG(object):
 		# SPEECHES FOR THE SPEECH THRONE
 		#print(speeches_republican)
 		#print(speeches_democratic)
+		#print(democratic_data_output)
+		
         	speechstack.add(speeches_republican)
 		speechstack1.add(speeches_democratic)
+	import json
+	#print(democratic_data_output)
+	with open('democratic_speeches.txt','a+') as out_json:
+                    out_json.write(democratic_data_output)
+	with open('republican_speeches.txt','a+') as out_json:
+                    out_json.write(democratic_data_output)
     
     def find_people(self):
         	mbrs = self.doc_ref.find_all('congmember')
@@ -312,7 +384,7 @@ class crToPG(object):
         self.bill_fields = ['congress','context',
                             'bill_type','bill_no','pageid']
         #self.speech_fields = ['speechid','affiliation','speaker','speaker_bioguide','pageid','text','turn']
-	self.speech_fields = ['affiliation','speaker','speaker_bioguide',
+	self.speech_fields = ['affiliation','speaker',
                               'text']
         pagestack = crPages(pagepath,self.page_fields)
         billstack = crBills(billpath,self.bill_fields)
