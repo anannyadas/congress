@@ -6,3 +6,6 @@ output/
 auxdata/
 *.sql~
 dbfiles/
+downloadcsv/speeches_D.csv
+downloadcsv/speeches_R.csv
+
