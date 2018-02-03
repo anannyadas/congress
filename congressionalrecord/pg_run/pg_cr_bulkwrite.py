@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+import nltk
+from nltk.collocations import *
+
 import sys
 from ..fdsys.cr_parser import ParseCRFile as pr
 from builtins import str
@@ -97,13 +100,13 @@ class crToPG(object):
 					print("Removing:"+str(key))'''
 		querywords = frequency_list.split()
 
-
-		for stemwords in querywords:
-			print(stemwords,stemmer.stem(stemwords))
-
+		#for stemwords in querywords:
+			#print(stemwords,stemmer.stem(stemwords))
 
 
-		resultwords  = [word for word in querywords if word.lower() not in stop_words]
+
+		resultwords  = [stemmer.stem(word) for word in querywords if word.lower() not in stop_words]
+
 		result = ' '.join(resultwords)
 
 		#print result
@@ -114,9 +117,22 @@ class crToPG(object):
 	#print(result)    	
 	return result
     
+    def ngrams(self,inputtext, n):
+  		inputtext = inputtext.split()
+  		output = {}
+  		for i in range(len(inputtext)-n+1):
+			print(inputtext[i:i+n])
+    			g = ' \n'.join(inputtext[i:i+n])
+    			output.setdefault(g, 0)
+    			output[g] += 1
+  		return output
+
+
+
 
     
     def remove_custom_stop_words(self, word_list):
+	
 	
 	#stop_words_lst = ['yo', 'so', 'well', 'um', 'a', 'the', 'you know', 'i mean']
 	with open("stop_words_list.txt") as stop_words_list:
@@ -296,12 +312,58 @@ class crToPG(object):
 		
         	speechstack.add(speeches_republican)
 		speechstack1.add(speeches_democratic)
+	
+
 	import json
 	#print(democratic_data_output)
-	with open('democratic_speeches.txt','a+') as out_json:
-                    out_json.write(democratic_data_output)
-	with open('republican_speeches.txt','a+') as out_json:
-                    out_json.write(democratic_data_output)
+	'''with open('democratic_speeches.txt','a+') as out_json:
+                    out_json.write(democratic_data_output)'''
+	
+	
+	line = ""
+	open_file = democratic_data_output
+	for val in open_file:
+    		line += val.lower()
+	tokens = line.split()
+
+	bigram_measures = nltk.collocations.BigramAssocMeasures()
+	finder = BigramCollocationFinder.from_words(tokens)
+	finder.apply_freq_filter(1)
+	a = finder.ngram_fd.viewitems()
+	democratic_speeches_2_grams=''
+	for i, j in a:
+  		#print("{0} {1} {2}".format(i[0], i[1], j))
+		democratic_speeches_2_grams = str("{0} {1} {2}".format(i[0], i[1],': '+ str(j))) + '\n'
+		
+		with open('democratic_speeches_2_grams.txt','a+') as out_json:
+                    out_json.write(str(democratic_speeches_2_grams) + '\n')
+	
+	'''democratic_speeches_2_grams = str(self.ngrams(democratic_data_output,2)) + "\n"
+	#print(self.ngrams(democratic_data_output,2))
+	with open('democratic_speeches_2_grams.txt','a+') as out_json:
+                    out_json.write(democratic_speeches_2_grams)'''
+	
+	'''with open('republican_speeches.txt','a+') as out_json:
+                    out_json.write(republican_data_output)
+	republican_speeches_2_grams = str(self.ngrams(republican_data_output,2)) + "\n"'''
+
+	repline = ""
+	open_file_rep = republican_data_output
+	for val in open_file_rep:
+    		repline += val.lower()
+	tokens = repline.split()
+
+	bigram_measures = nltk.collocations.BigramAssocMeasures()
+	finder = BigramCollocationFinder.from_words(tokens)
+	finder.apply_freq_filter(1)
+	a = finder.ngram_fd.viewitems()
+	republican_speeches_2_grams = ''
+	for i, j in a:
+  		#print("{0} {1} {2}".format(i[0], i[1], j))
+		republican_speeches_2_grams = str("{0} {1} {2}".format(i[0], i[1], ': '+ str(j))) + '\n'
+
+	with open('republican_speeches_2_grams.txt','a+') as out_json:
+                    out_json.write(str(republican_speeches_2_grams) + '\n')
     
     def find_people(self):
         	mbrs = self.doc_ref.find_all('congmember')
